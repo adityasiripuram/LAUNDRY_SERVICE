@@ -1,0 +1,19 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "laundry-backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hirekari-Abhishek-Raj/Laundry-Service-Project.git"
+  },
+  "author": "H.Abhishek Raj,Aditya,Shyamli",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hirekari-Abhishek-Raj/Laundry-Service-Project/issues"
+  },
+  "homepage": "https://github.com/Hirekari-Abhishek-Raj/Laundry-Service-Project#readme"
+}
