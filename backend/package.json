@@ -1,25 +1,21 @@
 {
-  "name": "backend",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.1.7",
+    "nodemon": "^2.0.15",
+    "validator": "^13.7.0"
+  },
+  "name": "back-end",
+  "description": "This folder will be having all Node Back-end code.",
   "version": "1.0.0",
-  "description": "laundry-backend",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Hirekari-Abhishek-Raj/Laundry-Service-Project.git"
-  },
-  "author": "H.Abhishek Raj,Aditya,Shyamli",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Hirekari-Abhishek-Raj/Laundry-Service-Project/issues"
-  },
-  "homepage": "https://github.com/Hirekari-Abhishek-Raj/Laundry-Service-Project#readme",
-  "dependencies": {
-    "express": "^4.17.3",
-    "mongoose": "^6.2.7",
-    "nodemon": "^2.0.15"
-  }
+  "author": "Aditya,Shyamali,Abhishek",
+  "license": "ISC"
 }

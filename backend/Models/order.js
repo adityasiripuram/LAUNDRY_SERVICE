@@ -1,23 +1,47 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const mongoose =  require("mongoose");
+const validate = require("validator");
 
-const ItemSchema = new Schema({
-  ProductType: { type: String },
-  Quantities: { type: Number, default: 0 },
-  Washing: { type: Boolean, default: false },
-  Iron: { type: Boolean, default: false },
-  Drywash: { type: Boolean, default: false },
-  Chemicalwash: { type: Boolean, default: false },
+const user = require("./user.js");
+const product = require("./product.js");
+
+const orderSchema =  new mongoose.Schema({
+    "Status": {
+        type : String
+    },
+    userId : { 
+        "type": mongoose.Schema.Types.ObjectId,
+        "ref": "user"
+     },
+     "Order Date and Time": {
+        type : String
+     },
+    "Total Items" :{
+        type : Number
+    },
+
+    "Price": {
+        type : Number
+    },
+
+    "orderDatail": [
+        {
+            "Item" :{ 
+                "type": String
+             },
+            "quantity" :{
+                type : String
+            },
+            "TpriceI" : {
+                type : Number
+            },
+            "service":{
+                type:Array
+            }
+        }
+    ]
+
 });
 
-const orderSchema = new Schema({
-  status: { type: String },
-  products: { type: [ItemsSchema] },
-  TotalPrice: { type: Number, default: 0 },
-  TotalQuantity: { type: Number, default: 0 },
-  user: { type: mongoose.Types.ObjectId, ref: "User" },
-});
+const Orders =  mongoose.model('Orders', orderSchema);
 
-const Order = mongoose.model("Order", orderSchema);
-
-module.exports = Order;
+module.exports ={Orders};
