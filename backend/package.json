@@ -16,6 +16,6 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Aditya,Shyamali,Abhishek",
+  "author": "Aditya",
   "license": "ISC"
 }
