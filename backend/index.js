@@ -30,6 +30,13 @@ const order = orderModel.Orders;
 const product = productModel.Products;
 
 // -----------------Routes-----------------------------
+app.use(express.json());
+
+const port = process.env.PORT ;
+
+app.listen(port, () => {
+  console.log(`Im listening on `,port);
+});
 app.get("/", (req, res) => {
   res.send("Server connected");
 });
