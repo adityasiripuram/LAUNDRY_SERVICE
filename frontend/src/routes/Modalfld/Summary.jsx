@@ -18,7 +18,8 @@ const Summary=(props)=>{
         }
         else{
             const token=localStorage.getItem("token")
-            const response = await fetch("http://localhost:8006/order", {
+            URL=process.env.REACT_APP_BACKEND_BASE_URL+"/order"
+            const response = await fetch(URL, {
                 method: "POST",
                 mode: "cors",
                 cache: "no-cache",

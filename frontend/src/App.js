@@ -1,5 +1,5 @@
 import React from "react";
-import { Route,Routes} from 'react-router-dom';
+import { Route,Routes,useNavigate} from 'react-router-dom';
 import Login from "./routes/Login.jsx";
 import Register from "./routes/Register";
 import Footer from "./Footer";
@@ -12,6 +12,8 @@ const App=()=>{
     const [path,setPath]=useState("/register");
     const [ordersList,setOrders]=useState([]);
     const [ordersLen, setOrderslen] = useState(0);
+    const navigate = useNavigate(); 
+
     const setOrds=(list)=>{
         setOrders(list)
     }
@@ -39,12 +41,29 @@ const App=()=>{
             setPath("/login")
         }
     }
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userName');
+        setNavVariable("Sign up");
+        setPath("/login");
+        setOrders([]);
+        navigate("/login"); // Redirect to login after logout
+    };
+
     return(
         <>
-            <Navbar navVariable={navVariable} change={() => { setNav() }} path={path}></Navbar>
+            {/* <Navbar navVariable={navVariable} change={() => { setNav() }} path={path}></Navbar>
+             */}
+            <Navbar
+                navVariable={navVariable}
+                change={setNav}
+                path={path}
+                onLogout={handleLogout} // Pass the logout handler to Navbar
+            />
             <Routes>
                 <Route excat path="/" element={<Login path={path} navVariable={navVariable} setOrd={(arr) => { setOrds(arr) }} change={()=>{setNav()}}/>}></Route>
                 <Route excat path="/login" element={<Login path={path} navVariable={navVariable} setOrd={(arr) => { setOrds(arr) }} change={() => { setNav() }} />}></Route>
+                <Route excat path="/logout" element={<Login path={path} navVariable={navVariable} setOrd={(arr) => { setOrds(arr) }} change={() => { setNav() }} />}></Route>
                 <Route excat path="/register" element={<Register path={path} navVariable={navVariable} change={() => { setNav() }} />}></Route>
                 <Route excat path="/orders" element={<Order ordersList={ordersList} len={ordersLen} setOrd={(arr) => { setOrds(arr) }} />}></Route>
                 <Route excat path="/orders/placeorder" element={<TakeOrders ordersList={ordersList} len={ordersLen} setOrd={(arr) => { addOrds(arr) }} />}></Route>

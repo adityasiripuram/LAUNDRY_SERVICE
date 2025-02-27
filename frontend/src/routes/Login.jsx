@@ -9,7 +9,11 @@ const Login=(props)=>{
     const login = async (elem) => {
         try {
             elem.preventDefault();
-            const response = await fetch("http://localhost:8006/login", {
+            
+        const URL=process.env.REACT_APP_BACKEND_BASE_URL+"/login"
+        //console.log(URL); // Check if the value is correctly loaded
+
+            const response = await fetch(URL, {
                 method: "POST",
                 mode: "cors",
                 cache: "no-cache",

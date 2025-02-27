@@ -6,7 +6,8 @@ const CancleAlert=(props)=> {
   const callCancelAPI= async()=>{
     try {
         const token = localStorage.getItem("token")
-      const response = await fetch("http://localhost:8006/cancel", {
+        const URL=process.env.REACT_APP_BACKEND_BASE_URL+"/cancel"
+      const response = await fetch( URL, {
           method: "PUT",
           mode: "cors",
           cache: "no-cache",

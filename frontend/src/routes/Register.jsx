@@ -9,7 +9,8 @@ const Register=(props)=>{
     const register = async (elem) => {
         try {
             elem.preventDefault();
-            const response=await fetch("http://localhost:8006/register", {
+            URL=process.env.REACT_APP_BACKEND_BASE_URL+"/register"
+            const response=await fetch(URL, {
                 method: "POST",
                 mode: "cors",
                 cache: "no-cache",
