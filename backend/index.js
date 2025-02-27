@@ -6,10 +6,8 @@ require("./DatabaseConnection.js");
 const userModel = require("./models/user.js");
 const orderModel = require("./models/order.js");
 const productModel = require("./models/product.js");
-
-const Access_Token_Secret =
-  "165a6629b602ad71a1ddac31b9dd60baf241f357778ad1748a2182db875cc80fb81401d64d1b2e4df85a550efb34673102a48ce0ddb7c849a4245b0809eed07d";
-
+require('dotenv').config();
+const Access_Token_Secret = process.env.ACCESS_TOKEN_SECRET;
 // -----------------Middlewares-----------------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,9 +24,10 @@ app.use(cors(corsOptions));
 user = userModel.Users;
 order = orderModel.Orders;
 product = productModel.Products;
+const port = process.env.PORT ;
 
-app.listen(8006, () => {
-  console.log(`Im listening on `);
+app.listen(port, () => {
+  console.log(`Im listening on `,port);
 });
 app.get("/", (req, res) => {
   res.send("Server connected");
