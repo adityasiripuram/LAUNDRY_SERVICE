@@ -1,212 +1,128 @@
 const express = require("express");
-const app = new express();
+const serverless = require("serverless-http"); 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 require("./DatabaseConnection.js");
 const userModel = require("./models/user.js");
 const orderModel = require("./models/order.js");
 const productModel = require("./models/product.js");
-require('dotenv').config();
+require("dotenv").config();
+
+const app = express();
 const Access_Token_Secret = process.env.ACCESS_TOKEN_SECRET;
+
 // -----------------Middlewares-----------------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 const cors = require("cors");
 const corsOptions = {
   origin: "*",
-  credentials: true, // Cross browser Requests. And, access-control-allow-credentials:true
+  credentials: true,
   optionSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
 // ---------DB-collections-----------------------
-user = userModel.Users;
-order = orderModel.Orders;
-product = productModel.Products;
-const port = process.env.PORT ;
+const user = userModel.Users;
+const order = orderModel.Orders;
+const product = productModel.Products;
 
-app.listen(port, () => {
-  console.log(`Im listening on `,port);
-});
+// -----------------Routes-----------------------------
 app.get("/", (req, res) => {
   res.send("Server connected");
 });
 
-// ----------------Logins ---------------------------
-
+// -----------------Login-----------------------------
 app.post("/login", async (req, res) => {
-  userDetails = req.body;
-  userID = userDetails.userID;
-  reqPassword = userDetails.password;
-  let query = {};
-  if (isNaN(userID)) {
-    query = { email: userID };
-  } else {
-    query = { phone: userID };
-  }
-  console.log(query);
+  const { userID, password } = req.body;
+  let query = isNaN(userID) ? { email: userID } : { phone: userID };
+
   user.findOne(query).then((result) => {
-    if (result == null) {
-      console.log("fail");
-      res.status(400).json({ message: "User not found" });
-    } else {
-      const hashPassword = result.password;
-      const userName = result.name;
-      bcrypt
-        .compare(reqPassword, hashPassword)
-        .then((outputofCompare) => {
-          if (outputofCompare) {
-            const user = { userID: result._id };
-            const token = jwt.sign(user, Access_Token_Secret);
-            userOrders = order
-              .find({ userId: result._id })
-              .then((result) => {
-                console.log("success");
-                res.status(200).json({
-                  token: token,
-                  userName: userName,
-                  orders: result,
-                });
-              })
-              .catch((err) => {
-                console.log("Some error in login ");
-                res.status(400).send(err);
-              });
-          } else {
-            res.status(403).send("Invalid password");
-          }
-        })
-        .catch((err) => {
-          res.status(400).json({ message: err });
-        });
+    if (!result) {
+      return res.status(400).json({ message: "User not found" });
     }
+
+    bcrypt.compare(password, result.password).then((isMatch) => {
+      if (!isMatch) {
+        return res.status(403).send("Invalid password");
+      }
+
+      const token = jwt.sign({ userID: result._id }, Access_Token_Secret);
+      order.find({ userId: result._id })
+        .then((orders) => res.status(200).json({ token, userName: result.name, orders }))
+        .catch((err) => res.status(400).send("Some error in login"));
+    });
   });
 });
 
-// --------------------------------------Register--------------------------------
-
+// -----------------Register-----------------------------
 app.post("/register", async (req, res) => {
   try {
-    userDetails = req.body;
-    console.log(userDetails);
-    const hashPassword = await bcrypt.hash(req.body.password, 10);
-    userDetails.password = hashPassword;
-    doc1 = new user(userDetails);
-    console.log(userDetails);
-    doc1
+    const { password, ...userDetails } = req.body;
+    userDetails.password = await bcrypt.hash(password, 10);
+    new user(userDetails)
       .save()
-      .then((result) => {
-        console.log("sucess");
-        res.status(200).json({ message: "Sucess" });
-      })
-      .catch((error) => {
-        console.log();
-        res.status(400).send(error);
-      });
+      .then(() => res.status(200).json({ message: "Success" }))
+      .catch((error) => res.status(400).send(error));
   } catch (err) {
-    console.log("s");
     res.status(500).send(err);
   }
 });
 
-// -----------------------------the validates the token from user----------------------
+// -----------------Token Validation Middleware----------------------
 const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) {
-    return res.status(403).send("Not authorized");
-  } else {
-    jwt.verify(token, Access_Token_Secret, (err, userDetails) => {
-      if (err) {
-        return res.status(403).send("Expired Token");
-      } else {
-        user
-          .find({ _id: userDetails.userID })
-          .then((result) => {
-            req.user = userDetails;
-            next();
-          })
-          .catch((err) => {
-            console.log("token erre");
-            res.status(400).send("User not found");
-          });
-      }
+  const token = req.headers["authorization"]?.split(" ")[1];
+  if (!token) return res.status(403).send("Not authorized");
+
+  jwt.verify(token, Access_Token_Secret, (err, userDetails) => {
+    if (err) return res.status(403).send("Expired Token");
+
+    user.findById(userDetails.userID).then((result) => {
+      if (!result) return res.status(400).send("User not found");
+
+      req.user = userDetails;
+      next();
     });
-  }
+  });
 };
 
-// --------------------------GET request--------------------------------------------
-
+// -----------------Get Products-----------------------------
 app.get("/products", authenticateToken, async (req, res) => {
-  product
-    .find()
-    .then((result) => {
-      res.status(200).json({
-        product: result,
-      });
-    })
-    .catch((err) => {
-      res.status(500).send(err);
-    });
+  product.find()
+    .then((products) => res.status(200).json({ products }))
+    .catch((err) => res.status(500).send(err));
 });
 
-// --------------------------POST request to Create order ------------------------------
+// -----------------Create Order-----------------------------
 app.post("/order", authenticateToken, async (req, res) => {
   const date = new Date();
-  const orderDetails = req.body;
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "June",
-    "July",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const orderDate = `${date.getDate()} ${
-    monthNames[date.getUTCMonth()]
-  } ${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}`;
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const orderDate = `${date.getDate()} ${monthNames[date.getUTCMonth()]} ${date.getFullYear()}, ${date.getHours()}:${date.getMinutes()}`;
 
-  orderdoc = {
+  const orderdoc = {
     userId: req.user.userID,
     "Order Date and Time": orderDate,
-    "Total Items": orderDetails.totalItems,
-    Price: orderDetails.price,
+    "Total Items": req.body.totalItems,
+    Price: req.body.price,
     Status: "Washed",
-    orderDatail: orderDetails.orderDatail,
+    orderDatail: req.body.orderDatail,
   };
-  console.log("hi");
-  document = new order(orderdoc);
-  document
+
+  new order(orderdoc)
     .save()
-    .then((result) => {
-      console.log(result.orderDatail, orderDetails.orderDatail);
-      res.status(200).send(result);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(400).send(err);
-    });
+    .then((result) => res.status(200).send(result))
+    .catch((err) => res.status(400).send(err));
 });
 
-// ------------------------------DELETE ORDER------------------------------------
+// -----------------Cancel Order-----------------------------
 app.put("/cancel", authenticateToken, async (req, res) => {
-  orderID = req.body.order_id;
-  console.log(orderID);
-  order
-    .findOneAndUpdate({ _id: orderID }, { Status: "Cancelled" })
-    .then((result) => {
-      console.log(orderID, result);
-      res.status(200).send("Updated");
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(400).json({ message: err });
-    });
+  order.findByIdAndUpdate(req.body.order_id, { Status: "Cancelled" })
+    .then(() => res.status(200).send("Updated"))
+    .catch((err) => res.status(400).json({ message: err }));
 });
+
+// ✅ Export app for Vercel
+module.exports = app;
+module.exports.handler = serverless(app);
