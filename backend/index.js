@@ -5,9 +5,9 @@ const bcrypt = require("bcrypt");
 require("dotenv").config();
 require("./DatabaseConnection.js");
 
-const userModel = require("./models/user.js");
-const orderModel = require("./models/order.js");
-const productModel = require("./models/product.js");
+const userModel = require("./Models/user.js");
+const orderModel = require("./Models/order.js");
+const productModel = require("./Models/product.js");
 
 const app = express();
 const Access_Token_Secret = process.env.ACCESS_TOKEN_SECRET;
